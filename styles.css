@@ -190,6 +190,7 @@ html[data-theme=c]{--vsl-glow:rgba(217,183,126,.6)}
 .video-sec{overflow-x:clip}
 .video-sec .wrap{position:relative;isolation:isolate}
 .video-sec .wrap::before{content:"";position:absolute;z-index:-1;top:-20px;bottom:-20px;left:4px;right:4px;border-radius:28px;background:radial-gradient(ellipse at center,var(--vsl-glow) 0%,var(--vsl-glow) 45%,transparent 75%);filter:blur(20px);pointer-events:none;animation:vslGlowPulse 6s cubic-bezier(.45,0,.55,1) infinite;will-change:opacity;transform:translateZ(0);backface-visibility:hidden}
-@keyframes vslGlowPulse{0%,100%{opacity:.45}50%{opacity:1}}
-.video-sec .embed-slot,.video-sec .video-slot{box-shadow:0 0 22px 4px var(--vsl-glow)}
-@media (prefers-reduced-motion:reduce){.video-sec .wrap::before{animation:none;opacity:.8}}
+@keyframes vslGlowPulse{0%,100%{opacity:.3}50%{opacity:1}}
+.vsl-frame{position:relative}
+.vsl-frame::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:12px;box-shadow:0 0 34px 8px var(--vsl-glow);pointer-events:none;opacity:.35;animation:vslGlowPulse 6s cubic-bezier(.45,0,.55,1) infinite;will-change:opacity;transform:translateZ(0)}
+@media (prefers-reduced-motion:reduce){.video-sec .wrap::before,.vsl-frame::after{animation:none;opacity:.8}}
