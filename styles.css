@@ -168,7 +168,7 @@ fieldset.grp legend{margin-bottom:10px}
 .embed-ph .ph{margin:0;max-height:100%;overflow:auto}
 .embed-ph.gone{display:none}
 .scarcity{font-size:clamp(21px,4.6vw,26px);line-height:1.3;margin:0 0 16px}
-.subbtn{margin-top:16px;font-size:18px}
+.subbtn{margin-top:16px;font-size:18px;text-align:center;font-style:italic}
 .wins[data-show="false"]{display:none!important}
 .win-grid{display:grid;gap:20px;grid-template-columns:1fr}
 .win-card{background:var(--card);border:2px solid var(--card-bd);border-radius:14px;padding:18px}
