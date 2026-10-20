@@ -178,3 +178,17 @@ fieldset.grp legend{margin-bottom:10px}
 .theme-switch button{min-width:48px;min-height:48px;padding:0 12px;font:700 18px/1 -apple-system,"Segoe UI",Arial,sans-serif;color:#EDE5D3;background:transparent;border:2px solid #EDE5D3;border-radius:10px;cursor:pointer}
 .theme-switch button[aria-pressed=true]{background:#F2C14E;color:#0D0B09;border-color:#F2C14E}
 .theme-switch button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+
+/* Header brand centered on every page */
+header.site .wrap{text-align:center}
+header.site .brand{display:inline-block}
+
+/* Pulsing gold glow behind the VSL box (index.html .embed-slot, vsl-long.html .video-slot). Sits under the box, never over it. */
+:root{--vsl-glow:rgba(217,162,27,.42)}
+html[data-theme=a]{--vsl-glow:rgba(242,193,78,.38)}
+html[data-theme=c]{--vsl-glow:rgba(217,183,126,.5)}
+.video-sec{overflow-x:clip}
+.video-sec .wrap{position:relative;isolation:isolate}
+.video-sec .wrap::before{content:"";position:absolute;z-index:-1;top:-14px;bottom:-14px;left:6px;right:6px;border-radius:24px;background:radial-gradient(ellipse at center,var(--vsl-glow) 0%,transparent 72%);filter:blur(22px);pointer-events:none;animation:vslGlowPulse 4s ease-in-out infinite}
+@keyframes vslGlowPulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+@media (prefers-reduced-motion:reduce){.video-sec .wrap::before{animation:none;opacity:.8;transform:none}}
