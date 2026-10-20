@@ -196,6 +196,6 @@ html[data-theme=c]{--vsl-glow:rgba(217,183,126,.6)}
 @media (prefers-reduced-motion:reduce){.video-sec .wrap::before,.vsl-frame::after{animation:none;opacity:.8}}
 /* Landing page: all copy centered (Caiden 2026-10-20). Forms on other pages stay left-aligned for easier filling. */
 body.landing main,body.landing footer.site{text-align:center}
-body.landing .eyebrow.pill{text-align:left;max-width:100%}
+body.landing .eyebrow.pill{text-align:center;justify-content:center;max-width:100%}
 body.landing ul,body.landing ol{list-style-position:inside;padding-left:0}
 body.landing .card{text-align:center}
