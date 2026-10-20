@@ -184,13 +184,13 @@ header.site .wrap{text-align:center}
 header.site .brand{display:inline-block}
 
 /* Pulsing gold glow behind the VSL box (index.html .embed-slot, vsl-long.html .video-slot). Sits under the box, never over it. */
-:root{--vsl-glow:rgba(217,162,27,.6)}
-html[data-theme=a]{--vsl-glow:rgba(242,193,78,.75)}
-html[data-theme=c]{--vsl-glow:rgba(217,183,126,.7)}
+:root{--vsl-glow:rgba(217,162,27,.5)}
+html[data-theme=a]{--vsl-glow:rgba(242,193,78,.55)}
+html[data-theme=c]{--vsl-glow:rgba(217,183,126,.6)}
 .video-sec{overflow-x:clip}
 .video-sec .wrap{position:relative;isolation:isolate}
 .video-sec .wrap::before{content:"";position:absolute;z-index:-1;top:-36px;bottom:-36px;left:-8px;right:-8px;border-radius:32px;background:radial-gradient(ellipse at center,var(--vsl-glow) 0%,var(--vsl-glow) 45%,transparent 75%);filter:blur(28px);pointer-events:none;animation:vslGlowPulse 4s ease-in-out infinite}
 @keyframes vslGlowPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
 .video-sec .embed-slot,.video-sec .video-slot{animation:vslEdgePulse 4s ease-in-out infinite}
-@keyframes vslEdgePulse{0%,100%{box-shadow:0 0 24px 4px var(--vsl-glow)}50%{box-shadow:0 0 56px 14px var(--vsl-glow)}}
-@media (prefers-reduced-motion:reduce){.video-sec .wrap::before{animation:none;opacity:.8;transform:none}.video-sec .embed-slot,.video-sec .video-slot{animation:none;box-shadow:0 0 40px 8px var(--vsl-glow)}}
+@keyframes vslEdgePulse{0%,100%{box-shadow:0 0 20px 3px var(--vsl-glow)}50%{box-shadow:0 0 42px 9px var(--vsl-glow)}}
+@media (prefers-reduced-motion:reduce){.video-sec .wrap::before{animation:none;opacity:.8;transform:none}.video-sec .embed-slot,.video-sec .video-slot{animation:none;box-shadow:0 0 30px 6px var(--vsl-glow)}}
