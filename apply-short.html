@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Apply to Talk With Our Team | Pured Media</title>
+<link rel="stylesheet" href="styles.css">
+<script>(function(){var d=document.documentElement,t="";try{var m=/[?&]theme=([abc])(?:&|$|#)/i.exec(location.search);if(m){t=m[1].toLowerCase();try{localStorage.setItem("pm_theme",t)}catch(e){}}else{try{t=localStorage.getItem("pm_theme")||""}catch(e){}}}catch(e){}if(!/^[abc]$/.test(t))t="a";d.setAttribute("data-theme",t)})()</script>
+</head>
+<body>
+<header class="site"><div class="wrap"><a class="brand" href="index.html"><span class="star" aria-hidden="true">&#10022;</span>Pured Media</a></div></header>
+<main>
+<!-- SHORT application (contact + 4 questions + consent), moved here from the VSL page. consent_version ev-apply-short-v1.
+     Wording: sales-evergreen.md 1.1-SHORT and copy-ads-pages.md Part 4, as compliance cleared it 2026-10-20. Do not re-word without compliance.
+     app.js wires #short-form (ids s_*). Posts event=apply, tag=evergreen-applied, form_version=short. Lands on thanks.html or not-a-fit.html. -->
+<section class="apply-sec" id="apply">
+<div class="wrap">
+<h1>Apply to talk with our team</h1>
+<p>Pured Media's coaching program is 10 weeks, with two coaching calls each week. The price is <strong>$5,000</strong>. We would rather you know that now, before you spend time on this form.</p>
+<span class="ph">[CONFIRM before launch: coo and cso confirm "two coaching calls each week" against the contract and capacity at evergreen volume, and whether the calls are 1:1 or group. Do not add "1:1".]</span>
+<p>You can pay in full, or you may be able to use financing through PayPal. Financing is a loan, so interest and fees may apply and you would repay it over time. Eligibility and terms are set by PayPal, so please read them before you agree to any loan. Please do not apply if paying for the program would strain your family.</p>
+<p>What happens next: you fill in a short form. A member of our team will call you to answer questions and see whether the program fits, and may text you if you check the text box. Then you can book a call with our enrollment team, who explain the program, the price and how payment works. It is a conversation, and you can say no.</p>
+<span class="ph">[REFUND / GUARANTEE TERMS: pending lawyer and compliance]<small>Place a plain link here: "Read our refund terms". Do not state any guarantee until the lawyer approves it.</small></span>
+
+<div class="card">
+<form id="short-form" novalidate>
+<div id="short-error" class="error" role="alert" aria-live="assertive"></div>
+
+<fieldset class="grp">
+<legend class="sr-only">Your details</legend>
+<div class="field"><label for="s_first">First name</label><input type="text" id="s_first" name="first_name" autocomplete="given-name" required></div>
+<div class="field"><label for="s_last">Last name</label><input type="text" id="s_last" name="last_name" autocomplete="family-name" required></div>
+<div class="field"><label for="s_email">Email address</label><input type="email" id="s_email" name="email" autocomplete="email" inputmode="email" required></div>
+<div class="field"><label for="s_phone">Mobile number</label><input type="tel" id="s_phone" name="phone" autocomplete="tel" inputmode="tel" required aria-describedby="s_phone-help"><p class="hint" id="s_phone-help">Required, so a team member can call.</p></div>
+<label class="consent" for="s_sms">
+<input type="checkbox" id="s_sms" name="sms_app">
+<span id="s_sms-text">Yes, Pured Media may send me text messages at the mobile number above about my application, my call and the program, including messages sent with automated technology. Consent is not a condition of buying anything. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help. <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms</a></span>
+</label>
+<div class="field"><label for="s_country">Country</label>
+<select id="s_country" name="country" autocomplete="country" required>
+<option value="">Choose your country</option>
+<option value="US">United States</option>
+<option value="CA">Canada</option>
+<option value="GB">United Kingdom</option>
+<option value="AU">Australia</option>
+<option value="NZ">New Zealand</option>
+<option value="OTHER">Another country</option>
+</select></div>
+<div class="field"><label for="s_state">State or province (US and Canada)</label><input type="text" id="s_state" name="state" autocomplete="address-level1"></div>
+</fieldset>
+
+<fieldset class="grp">
+<legend>Which of these is closest to why you are interested?</legend>
+<label class="opt"><input type="radio" name="q2" value="family-flexibility" required> More flexibility for my family</label>
+<label class="opt"><input type="radio" name="q2" value="new-skill-around-job"> A new skill to use around my job</label>
+<label class="opt"><input type="radio" name="q2" value="something-of-my-own"> Something of my own</label>
+<label class="opt"><input type="radio" name="q2" value="not-sure"> I am not sure yet</label>
+</fieldset>
+
+<fieldset class="grp">
+<legend>Did you watch the free class?</legend>
+<label class="opt"><input type="radio" name="watched_class" value="all" required> All of it</label>
+<label class="opt"><input type="radio" name="watched_class" value="most"> Most of it</label>
+<label class="opt"><input type="radio" name="watched_class" value="some"> Some of it</label>
+<label class="opt"><input type="radio" name="watched_class" value="not-yet"> Not yet</label>
+<p class="not-yet-note" id="not-yet-note">That is fine. You can watch it first: <a href="index.html#video">Watch the video</a></p>
+<span class="ph" id="s2-link-ph">[CONFIRM: copywriter and compliance clear the link label for the "Not yet" note. The cleared text is "[link]"; it points at the video on the home page (index.html#video).]</span>
+</fieldset>
+
+<fieldset class="grp">
+<legend>The program is $5,000. If this turns out to be the right fit, how would you plan to pay for it?</legend>
+<label class="opt"><input type="radio" name="payment_intent" value="full" required> Pay in full</label>
+<label class="opt"><input type="radio" name="payment_intent" value="financing"> Use financing (this is a loan, subject to approval, and interest and fees may apply)</label>
+<label class="opt"><input type="radio" name="payment_intent" value="unsure"> I'm not sure yet</label>
+<label class="opt"><input type="radio" name="payment_intent" value="talk-it-over"> I would want to talk it over with someone first</label>
+<p>Applying costs nothing. This form never asks for card or bank details, and our team will never ask for them by text or email.</p>
+<span class="ph">[HOLD: cso and coo confirm the last sentence holds in every call tier, including Zelle and PayPal links]</span>
+</fieldset>
+
+<div class="field">
+<label for="s_time">What is the best time to reach you, and what time zone are you in?</label>
+<input type="text" id="s_time" name="q9" required>
+</div>
+
+<!-- hidden tracking fields (filled by app.js) -->
+<input type="hidden" name="consent_version" value="ev-apply-short-v1">
+<input type="hidden" name="lead_source" value="">
+<input type="hidden" name="utm_source" value="">
+<input type="hidden" name="utm_medium" value="">
+<input type="hidden" name="utm_campaign" value="">
+<input type="hidden" name="utm_content" value="">
+<input type="hidden" name="utm_term" value="">
+<input type="hidden" name="ad_id" value="">
+<input type="hidden" name="landing_url" value="">
+<!-- honeypot -->
+<div class="hp-wrap" aria-hidden="true"><label for="nickname_hp">Leave this empty</label><input type="text" id="nickname_hp" name="nickname_hp" tabindex="-1" autocomplete="off"></div>
+
+<p class="fine" id="s_call-consent">By submitting this application, you agree that Pured Media may call you at the number above about your application. Calls may be recorded. <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms</a></p>
+<button type="submit" class="btn" id="s_submit">Apply to Talk With Our Team</button>
+<p class="fine under">No obligation. You can say no on the call.</p>
+</form>
+</div>
+<noscript><p class="ph">This form needs JavaScript. Please turn it on, or email us.</p></noscript>
+</div>
+</section>
+</main>
+<footer class="site"><div class="wrap">
+<span class="ph">[CONFIRM: registered legal entity, public address and support email for the footer. Owner: Max and coo.]</span>
+<nav aria-label="Legal"><span class="ph-i">[Earnings Disclaimer link: compliance review first]</span> <span class="ph-i">[Terms of Service link: coo fixes live Terms, compliance reviews]</span> <span class="ph-i">[Privacy Policy link: must disclose the Meta pixel]</span></nav>
+</div></footer>
+<script src="app.js" defer></script>
+</body>
+</html>
