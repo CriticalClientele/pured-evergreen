@@ -227,3 +227,9 @@ body.modal-open{overflow:hidden}
 @keyframes applyGlow{0%{box-shadow:0 0 0 0 rgba(217,183,126,0)}35%{box-shadow:0 0 0 8px rgba(217,183,126,.85),0 0 34px 14px rgba(217,183,126,.65)}100%{box-shadow:0 0 0 0 rgba(217,183,126,0)}}
 .btn.glow-pulse{animation:applyGlow 1.5s ease-out 1}
 @media (prefers-reduced-motion:reduce){.btn.glow-pulse{animation:none}}
+
+/* thanks.html: caller-number placeholder and FAQ video grid */
+.ph-big{font-size:24px}
+.faq-videos{display:grid;grid-template-columns:1fr;gap:24px;margin:24px 0}
+@media (min-width:760px){.faq-videos{grid-template-columns:1fr 1fr}}
+.faq-video .ph{margin-top:0}

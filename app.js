@@ -535,6 +535,13 @@
     });
   }
 
+  // ---- OTHER PAGES (thanks.html): hide each red embed placeholder once an embed is pasted into its slot ----
+  Array.prototype.forEach.call(document.querySelectorAll('.embed-slot'), function (slot) {
+    if (slot.id === 'embed-slot') return; // handled above
+    var ph = slot.querySelector('.embed-ph');
+    if (ph && Array.prototype.some.call(slot.children, function (c) { return c !== ph; })) ph.classList.add('gone');
+  });
+
   // ---- THEME SWITCHER: preview only. Appears ONLY when the URL has ?preview=1 (the colorway itself is set by the inline head script). ----
   if (qs.get('preview') === '1') {
     var root = document.documentElement;
