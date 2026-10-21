@@ -251,3 +251,4 @@ body.modal-open{overflow:hidden}
 .proof-fig img{border:0;border-radius:10px;aspect-ratio:4/3;object-fit:contain;background:#0d0b09}
 .proof-fig figcaption{margin-top:10px}
 .proof-fig-wide img{aspect-ratio:auto}
+@media (min-width:640px){.proof-grid>.proof-fig:not(.proof-fig-wide):last-child:nth-child(odd){grid-column:1 / -1;justify-self:center;width:calc(50% - 10px)}}
