@@ -245,3 +245,9 @@ body.modal-open{overflow:hidden}
 .proof-fig figcaption{font-size:18px;line-height:1.4;margin-top:8px}
 .proof-sub{font-size:24px;line-height:1.3;margin:32px 0 4px;color:#f2c14e}
 .proof-divider{border:0;border-top:1px solid rgba(242,193,78,.45);margin:40px 0 0}
+/* Even proof cards (Caiden 2026-10-20): same-size frames so rows line up with no gaps; screenshot centered inside, never cropped */
+.proof-grid{align-items:stretch}
+.proof-fig{display:flex;flex-direction:column;background:#15120e;border:2px solid rgba(242,193,78,.45);border-radius:16px;padding:12px}
+.proof-fig img{border:0;border-radius:10px;aspect-ratio:4/3;object-fit:contain;background:#0d0b09}
+.proof-fig figcaption{margin-top:10px}
+.proof-fig-wide img{aspect-ratio:auto}
