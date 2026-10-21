@@ -233,3 +233,13 @@ body.modal-open{overflow:hidden}
 .faq-videos{display:grid;grid-template-columns:1fr;gap:24px;margin:24px 0}
 @media (min-width:760px){.faq-videos{grid-template-columns:1fr 1fr}}
 .faq-video .ph{margin-top:0}
+
+/* Student proof grid + Max portrait (Caiden override) */
+.proof-cap{font-size:18px;line-height:1.5;margin:16px 0}
+.proof-cap a{color:inherit;text-decoration:underline}
+.proof-grid{display:grid;gap:20px;grid-template-columns:1fr;align-items:start;margin:20px 0}
+@media (min-width:640px){.proof-grid{grid-template-columns:1fr 1fr}}
+.proof-fig{margin:0}
+.proof-fig img{display:block;width:100%;height:auto;border-radius:14px;border:2px solid rgba(242,193,78,.45)}
+.proof-fig figcaption{font-size:18px;line-height:1.4;margin-top:8px}
+.max-portrait{display:block;width:120px;height:120px;object-fit:cover;object-position:center top;border-radius:50%;border:3px solid rgba(242,193,78,.6);margin:0 auto 16px}
