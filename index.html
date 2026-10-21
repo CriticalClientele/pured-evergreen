@@ -77,7 +77,7 @@
 <h2 class="scarcity">Our coaches can only take so many students at a time.</h2>
 
 <!-- Button "Apply to see if there is a place": CLEARED 2026-10-20 (Caiden). Verb must stay "Apply". Never "Reserve", "Claim", "Secure my spot" or "Save my seat". -->
-<a class="btn" href="apply-short.html">Apply to see if there is a place</a>
+<a class="btn" id="apply-btn" href="apply-short.html" aria-haspopup="dialog">Apply to see if there is a place</a>
 
 <!-- Sub-button line 1: CLEARED as edited 2026-10-20. Order is fixed: button, this line, the disclosure, "No obligation". Keep at 18px+ beside the button.
      Not live: line 2 ("Answer a few short questions, and our team will call to see whether the program is a fit and to explain the $5,000 price and how payment works.")
@@ -136,6 +136,28 @@
 <span class="ph">[CONFIRM: registered legal entity, that the address may be published, and the support email. Owner: Max and coo. The copy-file draft is unconfirmed, so it is not printed here.]</span>
 <p>This site is not part of Facebook or Meta Platforms, Inc., and is not endorsed by Facebook or Meta in any way.</p>
 </div></footer>
+<!-- APPLY POP-UP (Caiden 2026-10-20). Fields and order copied from the webinar form. Consent = cleared evergreen application consent (copy-ads-pages.md, "Call and text consent"), consent_version ev-popup-v1.
+     Heading = the button text. Submit label "Continue" and the close-button label "Close" are NEW MICROCOPY pending compliance. Wired in app.js (APPLY POP-UP). Without JS the button still links to apply-short.html. -->
+<div class="modal" id="ap-modal" hidden>
+<div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="ap-title" tabindex="-1">
+<button type="button" class="modal-x" id="ap-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+<h2 id="ap-title">Apply to see if there is a place</h2>
+<form id="ap-form" novalidate>
+<div id="ap-error" class="error" role="alert" aria-live="assertive"></div>
+<div class="field"><label for="ap-name">Full Name</label><input type="text" id="ap-name" name="full_name" autocomplete="name" required></div>
+<div class="field"><label for="ap-email">Email Address</label><input type="email" id="ap-email" name="email" autocomplete="email" inputmode="email" required></div>
+<div class="field"><label for="ap-phone">Mobile Phone</label><input type="tel" id="ap-phone" name="phone" autocomplete="tel" inputmode="tel" required></div>
+<div class="hp-wrap" aria-hidden="true"><label for="ap-hp">Nickname (leave this empty)</label><input type="text" id="ap-hp" name="nickname_hp" tabindex="-1" autocomplete="off"></div>
+<label class="consent" for="ap-sms">
+<input type="checkbox" id="ap-sms" name="sms_app">
+<span id="ap-sms-text">Yes, Pured Media may send me text messages at the mobile number above about my application, my call and the program, including messages sent with automated technology. Consent is not a condition of buying anything. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help. <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms</a></span>
+</label>
+<input type="hidden" name="consent_version" value="ev-popup-v1">
+<p class="fine" id="ap-call-consent">By submitting this application, you agree that Pured Media may call you at the number above about your application. Calls may be recorded.</p>
+<button type="submit" class="btn" id="ap-submit">Continue</button>
+</form>
+</div>
+</div>
 <script src="app.js" defer></script>
 </body>
 </html>

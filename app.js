@@ -6,6 +6,7 @@
   // ---- CONFIG (placeholders: see README) ----
   // One Zapier Catch Hook URL per zap (EV-1 opt-in, EV-2 class events, EV-3 application).
   var ZAPIER_WEBHOOK_URL = 'ZAPIER_WEBHOOK_URL';          // PLACEHOLDER: default for all events
+  var ZAPIER_EVERGREEN_POPUP_URL = 'ZAPIER_EVERGREEN_POPUP_URL'; // PLACEHOLDER: Catch Hook for the index.html contact pop-up (separate from ZAPIER_WEBHOOK_URL)
   var WEBHOOK_OVERRIDES = { optin: '', 'class': '', apply: '' }; // optional per-event URLs
   // PLACEHOLDER: coo supplies the supported-country list. Anything else goes to not-a-fit.html.
   var SUPPORTED_COUNTRIES = ['US', 'CA', 'GB', 'AU', 'NZ'];
@@ -219,6 +220,100 @@
     });
   }
 
+  // ---- APPLY POP-UP (index.html): contact form, then on to apply-short.html with the contact carried over ----
+  var POPUP_KEY = 'pm_ev_contact';
+  var apBtn = $('apply-btn'), apModal = $('ap-modal');
+  function popupLeadSource() {
+    var src = ATTR.utm_source || '', host = '';
+    try { host = (document.referrer || '').split('/')[2] || ''; } catch (e) { host = ''; }
+    if (src === 'meta') return LEAD_SOURCE_META;
+    if (src === 'instagram' || /(^|\.)instagram\.com$/i.test(host)) return 'instagram-bio';
+    return 'direct';
+  }
+  function carryContact(c) {
+    var ok = false;
+    try {
+      window.sessionStorage.setItem(POPUP_KEY, JSON.stringify(c));
+      ok = window.sessionStorage.getItem(POPUP_KEY) !== null;
+    } catch (e) { ok = false; }
+    var url = 'apply-short.html';
+    if (!ok) {
+      url += '?' + new URLSearchParams({ cn: c.name, ce: c.email, cp: c.phone, cs: c.sms ? '1' : '0', ct: c.consent_timestamp, cv: c.consent_version }).toString();
+    }
+    location.href = url;
+  }
+  if (apBtn && apModal) {
+    var apForm = $('ap-form'), apErr = $('ap-error'), apBox = apModal.querySelector('.modal-box');
+    var apSiblings = Array.prototype.slice.call(document.querySelectorAll('body > header, body > main, body > footer'));
+    var FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]):not([tabindex="-1"]),select,textarea';
+    var apOpen = function () {
+      apModal.hidden = false;
+      document.body.classList.add('modal-open');
+      apSiblings.forEach(function (el) { try { el.inert = true; } catch (e) { /* ignore */ } });
+      apErr.classList.remove('show');
+      $('ap-name').focus();
+    };
+    var apClose = function () {
+      apModal.hidden = true;
+      document.body.classList.remove('modal-open');
+      apSiblings.forEach(function (el) { try { el.inert = false; } catch (e) { /* ignore */ } });
+      apBtn.focus();
+    };
+    apBtn.addEventListener('click', function (e) { e.preventDefault(); apOpen(); });
+    $('ap-close').addEventListener('click', apClose);
+    apModal.addEventListener('mousedown', function (e) { if (e.target === apModal) apClose(); });
+    document.addEventListener('keydown', function (e) {
+      if (apModal.hidden) return;
+      if (e.key === 'Escape') { e.preventDefault(); apClose(); return; }
+      if (e.key !== 'Tab') return;
+      var list = Array.prototype.filter.call(apBox.querySelectorAll(FOCUSABLE), function (el) { return el.offsetParent !== null; });
+      if (!list.length) { e.preventDefault(); return; }
+      var first = list[0], last = list[list.length - 1], a = document.activeElement;
+      if (!apBox.contains(a)) { e.preventDefault(); first.focus(); }
+      else if (e.shiftKey && (a === first || a === apBox)) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
+    });
+    apForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      apErr.classList.remove('show');
+      if (apForm.nickname_hp.value.trim() !== '') { location.href = 'apply-short.html'; return; } // honeypot: fake success, send nothing
+      var name = apForm.full_name.value.trim().replace(/\s+/g, ' ').split(' ').map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+      var parts = name.split(' ');
+      if (parts.length < 2) { showErr(apErr, 'Please enter your first and last name.', apForm.full_name); return; }
+      var email = apForm.email.value.trim().toLowerCase();
+      if (!validEmail(email)) { showErr(apErr, 'Please enter a valid email address.', apForm.email); return; }
+      var p = parsePhone(apForm.phone.value);
+      if (!p) { showErr(apErr, 'Please enter a valid US or Canada mobile number, or include your country code with a +.', apForm.phone); return; }
+      var btn = $('ap-submit'); btn.disabled = true;
+      var sms = $('ap-sms').checked, ts = new Date().toISOString();
+      var contact = {
+        name: name, first: parts[0], last: parts.slice(1).join(' '), email: email, phone: p.e164, phone_country: p.country,
+        sms: sms, sms_consent_text: sms ? labelText('ap-sms-text') : '', call_consent_text: labelText('ap-call-consent'),
+        consent_version: apForm.consent_version.value, consent_timestamp: ts, lead_source: popupLeadSource()
+      };
+      var data = {
+        full_name: name, first_name: contact.first, last_name: contact.last, email: email, phone: p.e164, phone_country: p.country,
+        sms_consent: sms ? 'true' : 'false', sms_consent_text: contact.sms_consent_text, call_consent_text: contact.call_consent_text,
+        consent_version: contact.consent_version, consent_timestamp: ts, form: 'popup', lead_source: contact.lead_source,
+        page_url: location.href, user_agent: navigator.userAgent, hp: ''
+      };
+      KEYS.forEach(function (k) { data[k] = ATTR[k] || ''; }); data.landing_url = ATTR.landing_url || location.href;
+      if (ZAPIER_EVERGREEN_POPUP_URL === 'ZAPIER_EVERGREEN_POPUP_URL') {
+        // Placeholder: never block the redirect while the webhook is not set.
+        console.info('[dev] ZAPIER_EVERGREEN_POPUP_URL not set; would send', data);
+        carryContact(contact);
+        return;
+      }
+      var body = new URLSearchParams();
+      Object.keys(data).forEach(function (k) { body.set(k, data[k] == null ? '' : String(data[k])); });
+      fetch(ZAPIER_EVERGREEN_POPUP_URL, { method: 'POST', mode: 'no-cors', body: body }).then(function () {
+        carryContact(contact);
+      }, function () {
+        btn.disabled = false; showErr(apErr, 'Something went wrong. Please try again.');
+      });
+    });
+  }
+
   // ---- LANDING PAGE: hide the red embed placeholder once a Wistia/Vturb embed is pasted into #embed-slot ----
   var eslot = $('embed-slot'), eph = $('embed-ph');
   if (eslot && eph) {
@@ -235,6 +330,23 @@
   if (sform) {
     var serr = $('short-error');
     var spre = lsGet('pm_ev_email'); if (spre && !sform.email.value) sform.email.value = spre;
+    // Contact carried over from the index.html pop-up: prefill, hide the contact block and consent so she is not asked twice.
+    var carried = null;
+    try { carried = JSON.parse(window.sessionStorage.getItem(POPUP_KEY)); } catch (e) { carried = null; }
+    if (!carried && qs.get('ce')) {
+      var cn = (qs.get('cn') || '').replace(/\s+/g, ' ').trim().split(' ');
+      carried = { name: cn.join(' '), first: cn[0] || '', last: cn.slice(1).join(' '), email: qs.get('ce'), phone: qs.get('cp') || '', sms: qs.get('cs') === '1',
+        sms_consent_text: qs.get('cs') === '1' ? labelText('s_sms-text') : '', call_consent_text: labelText('s_call-consent'),
+        consent_version: qs.get('cv') || 'ev-popup-v1', consent_timestamp: qs.get('ct') || '', lead_source: '' };
+      try { history.replaceState(null, '', location.pathname); } catch (e) { /* ignore */ }
+    }
+    if (carried && !(carried.first && carried.last && validEmail(carried.email || '') && parsePhone(carried.phone))) carried = null;
+    if (carried) {
+      sform.first_name.value = carried.first; sform.last_name.value = carried.last;
+      sform.email.value = carried.email; sform.phone.value = carried.phone;
+      $('s_sms').checked = !!carried.sms;
+      Array.prototype.forEach.call(sform.querySelectorAll('[data-contact]'), function (el) { el.hidden = true; });
+    }
     sform.querySelectorAll('input[name="watched_class"]').forEach(function (r) {
       r.addEventListener('change', function () { $('not-yet-note').classList.toggle('show', r.value === 'not-yet' && r.checked); });
     });
@@ -266,6 +378,11 @@
         lead_source: leadSource(), tag: 'evergreen-applied', page_url: location.href, user_agent: navigator.userAgent, hp: ''
       };
       KEYS.forEach(function (k) { data[k] = ATTR[k] || ''; }); data.landing_url = ATTR.landing_url || location.href;
+      if (carried) { // keep the pop-up consent record; she was not re-asked
+        data.sms_consent_text = carried.sms_consent_text; data.call_consent_text = carried.call_consent_text;
+        data.consent_version = carried.consent_version; data.consent_timestamp = carried.consent_timestamp;
+        data.contact_source = 'popup'; data.popup_lead_source = carried.lead_source || '';
+      }
       lsSet('pm_ev_name', first); lsSet('pm_ev_email', data.email);
       send('apply', data).then(function () {
         location.href = supported ? 'thanks.html?n=' + encodeURIComponent(first) : 'not-a-fit.html';

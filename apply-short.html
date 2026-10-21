@@ -29,11 +29,11 @@
 
 <fieldset class="grp">
 <legend class="sr-only">Your details</legend>
-<div class="field"><label for="s_first">First name</label><input type="text" id="s_first" name="first_name" autocomplete="given-name" required></div>
-<div class="field"><label for="s_last">Last name</label><input type="text" id="s_last" name="last_name" autocomplete="family-name" required></div>
-<div class="field"><label for="s_email">Email address</label><input type="email" id="s_email" name="email" autocomplete="email" inputmode="email" required></div>
-<div class="field"><label for="s_phone">Mobile number</label><input type="tel" id="s_phone" name="phone" autocomplete="tel" inputmode="tel" required aria-describedby="s_phone-help"><p class="hint" id="s_phone-help">Required, so a team member can call.</p></div>
-<label class="consent" for="s_sms">
+<div class="field" data-contact><label for="s_first">First name</label><input type="text" id="s_first" name="first_name" autocomplete="given-name" required></div>
+<div class="field" data-contact><label for="s_last">Last name</label><input type="text" id="s_last" name="last_name" autocomplete="family-name" required></div>
+<div class="field" data-contact><label for="s_email">Email address</label><input type="email" id="s_email" name="email" autocomplete="email" inputmode="email" required></div>
+<div class="field" data-contact><label for="s_phone">Mobile number</label><input type="tel" id="s_phone" name="phone" autocomplete="tel" inputmode="tel" required aria-describedby="s_phone-help"><p class="hint" id="s_phone-help">Required, so a team member can call.</p></div>
+<label class="consent" for="s_sms" data-contact>
 <input type="checkbox" id="s_sms" name="sms_app">
 <span id="s_sms-text">Yes, Pured Media may send me text messages at the mobile number above about my application, my call and the program, including messages sent with automated technology. Consent is not a condition of buying anything. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help. <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms</a></span>
 </label>
@@ -96,7 +96,7 @@
 <!-- honeypot -->
 <div class="hp-wrap" aria-hidden="true"><label for="nickname_hp">Leave this empty</label><input type="text" id="nickname_hp" name="nickname_hp" tabindex="-1" autocomplete="off"></div>
 
-<p class="fine" id="s_call-consent">By submitting this application, you agree that Pured Media may call you at the number above about your application. Calls may be recorded. <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms</a></p>
+<p class="fine" id="s_call-consent" data-contact>By submitting this application, you agree that Pured Media may call you at the number above about your application. Calls may be recorded. <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms</a></p>
 <button type="submit" class="btn" id="s_submit">Apply to Talk With Our Team</button>
 <p class="fine under">No obligation. You can say no on the call.</p>
 </form>
