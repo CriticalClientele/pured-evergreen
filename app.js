@@ -220,16 +220,33 @@
     });
   }
 
-  // ---- APPLY POP-UP (index.html): contact form, then on to apply-short.html with the contact carried over ----
+  // ---- APPLY POP-UP (index.html): two modes, one pop-up ----
+  //  mode "apply": Apply button. Contact already captured -> straight to apply-short.html. Otherwise pop-up, then redirect.
+  //  mode "video": video gate (see VIDEO GATE below). Pop-up, then unlock the video in place, no redirect.
   var POPUP_KEY = 'pm_ev_contact';
+  var CAPTURED_KEY = 'pm_ev_captured';   // "contact captured" record, in sessionStorage AND localStorage
+  var LEADSRC_KEY = 'pm_ev_leadsrc';
   var apBtn = $('apply-btn'), apModal = $('ap-modal');
+  var apApi = null;
+  function ssGet(k) { try { return window.sessionStorage.getItem(k); } catch (e) { return null; } }
+  function ssSet(k, v) { try { window.sessionStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  // lead_source: evergreen-meta / instagram-bio / direct. Shared by the pop-up and apply-short.html.
+  // A non-direct answer is remembered for the session, because the internal hop to apply-short.html hides the original referrer.
   function popupLeadSource() {
-    var src = ATTR.utm_source || '', host = '';
+    var src = ATTR.utm_source || '', host = '', found = 'direct';
     try { host = (document.referrer || '').split('/')[2] || ''; } catch (e) { host = ''; }
-    if (src === 'meta') return LEAD_SOURCE_META;
-    if (src === 'instagram' || /(^|\.)instagram\.com$/i.test(host)) return 'instagram-bio';
-    return 'direct';
+    if (src === 'meta') found = LEAD_SOURCE_META;
+    else if (src === 'instagram' || /(^|\.)instagram\.com$/i.test(host)) found = 'instagram-bio';
+    if (found !== 'direct') { ssSet(LEADSRC_KEY, found); return found; }
+    return ssGet(LEADSRC_KEY) || 'direct';
   }
+  function readCaptured() {
+    var raw = ssGet(CAPTURED_KEY) || lsGet(CAPTURED_KEY), c = null;
+    if (!raw) return null;
+    try { c = JSON.parse(raw); } catch (e) { return null; }
+    return (c && c.first && c.last && validEmail(c.email || '') && parsePhone(c.phone)) ? c : null;
+  }
+  function saveCaptured(c) { var s = JSON.stringify(c); ssSet(CAPTURED_KEY, s); lsSet(CAPTURED_KEY, s); }
   function carryContact(c) {
     var ok = false;
     try {
@@ -246,21 +263,30 @@
     var apForm = $('ap-form'), apErr = $('ap-error'), apBox = apModal.querySelector('.modal-box');
     var apSiblings = Array.prototype.slice.call(document.querySelectorAll('body > header, body > main, body > footer'));
     var FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]):not([tabindex="-1"]),select,textarea';
-    var apOpen = function () {
+    var apMode = 'apply', apOpener = apBtn, apOnUnlock = null;
+    var apOpen = function (mode, opener, onUnlock) {
+      apMode = mode || 'apply'; apOpener = opener || apBtn; apOnUnlock = onUnlock || null;
       apModal.hidden = false;
       document.body.classList.add('modal-open');
       apSiblings.forEach(function (el) { try { el.inert = true; } catch (e) { /* ignore */ } });
       apErr.classList.remove('show');
+      $('ap-submit').disabled = false;
       $('ap-name').focus();
     };
-    var apClose = function () {
+    var apClose = function (restoreFocus) {
       apModal.hidden = true;
       document.body.classList.remove('modal-open');
       apSiblings.forEach(function (el) { try { el.inert = false; } catch (e) { /* ignore */ } });
-      apBtn.focus();
+      if (restoreFocus !== false && apOpener && document.body.contains(apOpener)) apOpener.focus();
     };
-    apBtn.addEventListener('click', function (e) { e.preventDefault(); apOpen(); });
-    $('ap-close').addEventListener('click', apClose);
+    apApi = { open: apOpen, close: apClose, captured: readCaptured };
+    apBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var have = readCaptured();
+      if (have) { carryContact(have); return; }   // MODE 2: already captured, skip the pop-up
+      apOpen('apply', apBtn);
+    });
+    $('ap-close').addEventListener('click', function () { apClose(); });
     apModal.addEventListener('mousedown', function (e) { if (e.target === apModal) apClose(); });
     document.addEventListener('keydown', function (e) {
       if (apModal.hidden) return;
@@ -276,7 +302,11 @@
     apForm.addEventListener('submit', function (e) {
       e.preventDefault();
       apErr.classList.remove('show');
-      if (apForm.nickname_hp.value.trim() !== '') { location.href = 'apply-short.html'; return; } // honeypot: fake success, send nothing
+      var video = apMode === 'video';
+      if (apForm.nickname_hp.value.trim() !== '') { // honeypot: fake success, send and store nothing
+        if (video) { apClose(false); if (apOnUnlock) apOnUnlock(); } else { location.href = 'apply-short.html'; }
+        return;
+      }
       var name = apForm.full_name.value.trim().replace(/\s+/g, ' ').split(' ').map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
       var parts = name.split(' ');
       if (parts.length < 2) { showErr(apErr, 'Please enter your first and last name.', apForm.full_name); return; }
@@ -286,29 +316,33 @@
       if (!p) { showErr(apErr, 'Please enter a valid US or Canada mobile number, or include your country code with a +.', apForm.phone); return; }
       var btn = $('ap-submit'); btn.disabled = true;
       var sms = $('ap-sms').checked, ts = new Date().toISOString();
+      var source = video ? 'video-gate' : 'popup';
       var contact = {
         name: name, first: parts[0], last: parts.slice(1).join(' '), email: email, phone: p.e164, phone_country: p.country,
         sms: sms, sms_consent_text: sms ? labelText('ap-sms-text') : '', call_consent_text: labelText('ap-call-consent'),
-        consent_version: apForm.consent_version.value, consent_timestamp: ts, lead_source: popupLeadSource()
+        consent_version: apForm.consent_version.value, consent_timestamp: ts, lead_source: popupLeadSource(), contact_source: source
       };
       var data = {
         full_name: name, first_name: contact.first, last_name: contact.last, email: email, phone: p.e164, phone_country: p.country,
         sms_consent: sms ? 'true' : 'false', sms_consent_text: contact.sms_consent_text, call_consent_text: contact.call_consent_text,
-        consent_version: contact.consent_version, consent_timestamp: ts, form: 'popup', lead_source: contact.lead_source,
-        page_url: location.href, user_agent: navigator.userAgent, hp: ''
+        consent_version: contact.consent_version, consent_timestamp: ts, form: video ? 'popup-video' : 'popup', contact_source: source,
+        lead_source: contact.lead_source, page_url: location.href, user_agent: navigator.userAgent, hp: ''
       };
       KEYS.forEach(function (k) { data[k] = ATTR[k] || ''; }); data.landing_url = ATTR.landing_url || location.href;
+      var finish = function () {
+        saveCaptured(contact);
+        if (video) { apClose(false); if (apOnUnlock) apOnUnlock(); }   // MODE 1: no redirect, the video starts in place
+        else carryContact(contact);
+      };
       if (ZAPIER_EVERGREEN_POPUP_URL === 'ZAPIER_EVERGREEN_POPUP_URL') {
-        // Placeholder: never block the redirect while the webhook is not set.
+        // Placeholder: never block while the webhook is not set.
         console.info('[dev] ZAPIER_EVERGREEN_POPUP_URL not set; would send', data);
-        carryContact(contact);
+        finish();
         return;
       }
       var body = new URLSearchParams();
       Object.keys(data).forEach(function (k) { body.set(k, data[k] == null ? '' : String(data[k])); });
-      fetch(ZAPIER_EVERGREEN_POPUP_URL, { method: 'POST', mode: 'no-cors', body: body }).then(function () {
-        carryContact(contact);
-      }, function () {
+      fetch(ZAPIER_EVERGREEN_POPUP_URL, { method: 'POST', mode: 'no-cors', body: body }).then(finish, function () {
         btn.disabled = false; showErr(apErr, 'Something went wrong. Please try again.');
       });
     });
@@ -319,6 +353,115 @@
   if (eslot && eph) {
     var hasEmbed = Array.prototype.some.call(eslot.children, function (c) { return c !== eph; });
     if (hasEmbed) eph.classList.add('gone');
+  }
+
+  // ---- VIDEO GATE (index.html): transparent play overlay over a REAL embed. Click -> same pop-up -> unlock and play in place. ----
+  // Never gates the red placeholder (no embed yet). Test: add ?gate=1 (forces the overlay, ignores the saved contact); ?gate=reset clears the saved contact.
+  if (eslot && apApi) {
+    (function () {
+      if (qs.get('gate') === 'reset') {
+        try { window.sessionStorage.removeItem(CAPTURED_KEY); } catch (e) { /* ignore */ }
+        try { window.localStorage.removeItem(CAPTURED_KEY); } catch (e) { /* ignore */ }
+      }
+      var force = qs.get('gate') === '1';
+      var real = Array.prototype.some.call(eslot.children, function (c) {
+        if (c === eph) return false;
+        if (c.tagName === 'VIDEO' && !c.getAttribute('src') && !c.querySelector('source')) return false;
+        return true;
+      });
+
+      // ---- VIDEO END: when the VSL ends, scroll to the Apply button and pulse it once. No redirect, no new words. ----
+      if (real) {
+        var endDone = false;
+        var onEnd = function () {
+          if (endDone || !apBtn) return;
+          endDone = true;
+          var reduce = false;
+          try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduce = false; }
+          try { apBtn.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); } catch (e) { apBtn.scrollIntoView(); }
+          if (!reduce) {
+            apBtn.classList.add('glow-pulse');
+            setTimeout(function () { apBtn.classList.remove('glow-pulse'); }, 1600);
+          }
+        };
+        var htmlNow = eslot.innerHTML;
+        eslot.addEventListener('ended', onEnd, true);   // native <video>: media events do not bubble, so listen in the capture phase
+        if (/wistia/i.test(htmlNow)) {
+          window._wq = window._wq || [];
+          window._wq.push({ id: '_all', onReady: function (v) { try { v.bind('end', onEnd); } catch (e) { /* ignore */ } } });
+        }
+        if (/vturb|smartplayer|converteai/i.test(htmlNow)) {
+          var wired = {}, tries = 0;
+          (function wire() {
+            var sp = window.smartplayer;
+            if (sp && sp.instances) {
+              Array.prototype.forEach.call(eslot.querySelectorAll('vturb-smartplayer,[id^="vid-"]'), function (el) {
+                var inst = sp.instances[el.id] || sp.instances[String(el.id).replace(/^vid-/, '')];
+                if (!inst || wired[el.id]) return;
+                wired[el.id] = true;
+                try {
+                  if (typeof inst.on === 'function') inst.on('ended', onEnd);
+                  else if (typeof inst.addEventListener === 'function') inst.addEventListener('ended', onEnd);
+                  if (inst.video && typeof inst.video.addEventListener === 'function') inst.video.addEventListener('ended', onEnd);
+                } catch (e) { /* ignore */ }
+              });
+            }
+            if (++tries < 40) setTimeout(wire, 750);
+          })();
+        }
+      }
+
+      if (!(real || force)) return;
+      if (!force && apApi.captured()) return;   // already captured: no gate on reload or return visit
+
+      var kids = Array.prototype.slice.call(eslot.children);
+      var setInert = function (on) { kids.forEach(function (el) { try { el.inert = on; } catch (e) { /* ignore */ } }); };
+      var ov = document.createElement('button');
+      ov.type = 'button'; ov.id = 'gate-ov'; ov.className = 'gate-ov';
+      ov.setAttribute('aria-label', 'Play video'); ov.setAttribute('aria-haspopup', 'dialog');
+      ov.innerHTML = '<span class="gate-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="44" height="44" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span>';
+      eslot.classList.add('gated');
+      setInert(true);   // keep the player under the overlay out of reach of the keyboard and screen readers
+      eslot.appendChild(ov);
+
+      // Start the player in place. Runs right after her Continue click; if the browser blocks it, the player stays visible to tap.
+      var startVideo = function () {
+        var html = eslot.innerHTML, n = 0;
+        try {
+          if (/wistia/i.test(html)) {
+            window._wq = window._wq || [];
+            window._wq.push({ id: '_all', onReady: function (v) { try { v.play(); } catch (e) { /* ignore */ } } });
+          }
+        } catch (e) { /* ignore */ }
+        if (/vturb|smartplayer|converteai/i.test(html)) {
+          var vt = function () {
+            var sp = window.smartplayer, hit = false;
+            if (!sp || !sp.instances) return false;
+            Array.prototype.forEach.call(eslot.querySelectorAll('vturb-smartplayer,[id^="vid-"]'), function (el) {
+              var inst = sp.instances[el.id] || sp.instances[String(el.id).replace(/^vid-/, '')];
+              try {
+                if (inst && typeof inst.play === 'function') { inst.play(); hit = true; }
+                else if (inst && inst.video && typeof inst.video.play === 'function') { inst.video.play(); hit = true; }
+              } catch (e) { /* ignore */ }
+            });
+            return hit;
+          };
+          (function tick() { if (vt() || ++n > 12) return; setTimeout(tick, 500); })();
+        }
+        Array.prototype.forEach.call(eslot.querySelectorAll('video'), function (v) {
+          try { var pr = v.play(); if (pr && pr.catch) pr.catch(function () { /* autoplay blocked: player stays visible */ }); } catch (e) { /* ignore */ }
+        });
+      };
+      var unlock = function () {
+        if (ov.parentNode) ov.parentNode.removeChild(ov);
+        eslot.classList.remove('gated');
+        setInert(false);
+        eslot.setAttribute('tabindex', '-1');
+        try { eslot.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+        startVideo();
+      };
+      ov.addEventListener('click', function () { apApi.open('video', ov, unlock); });
+    })();
   }
 
   // ---- VSL PAGE: honest video placeholder (hide overlay once a real source exists) ----
@@ -375,13 +518,13 @@
         sms_consent: sms ? 'true' : 'false', sms_consent_text: sms ? labelText('s_sms-text') : '',
         call_consent_text: labelText('s_call-consent'),
         consent_version: sform.consent_version.value, form_version: 'short', consent_timestamp: new Date().toISOString(),
-        lead_source: leadSource(), tag: 'evergreen-applied', page_url: location.href, user_agent: navigator.userAgent, hp: ''
+        lead_source: popupLeadSource(), tag: 'evergreen-applied', page_url: location.href, user_agent: navigator.userAgent, hp: ''
       };
       KEYS.forEach(function (k) { data[k] = ATTR[k] || ''; }); data.landing_url = ATTR.landing_url || location.href;
       if (carried) { // keep the pop-up consent record; she was not re-asked
         data.sms_consent_text = carried.sms_consent_text; data.call_consent_text = carried.call_consent_text;
         data.consent_version = carried.consent_version; data.consent_timestamp = carried.consent_timestamp;
-        data.contact_source = 'popup'; data.popup_lead_source = carried.lead_source || '';
+        data.contact_source = carried.contact_source || 'popup'; data.popup_lead_source = carried.lead_source || '';
       }
       lsSet('pm_ev_name', first); lsSet('pm_ev_email', data.email);
       send('apply', data).then(function () {
